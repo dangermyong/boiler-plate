@@ -1,16 +1,36 @@
 const express = require('express')
 const app = express()
 const port = 5000
+const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
+const config = require('./config/key')
 
-const mongoURI = 'mongodb+srv://myong:jtdvf33K1WCzVxtE@cluster0.s5g2x.mongodb.net/shopping?retryWrites=true&w=majority'
+const { User } = require('./models/User')
 
-mongoose.connect(mongoURI, { useUnifiedTopology: true, useNewUrlParser: true })
+// application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// application/json
+app.use(bodyParser.json())
+
+mongoose.connect(config.mongoURI, { useUnifiedTopology: true, useNewUrlParser: true })
   .then(() => console.log('MongoDb Connected...'))
   .catch(err => console.log(err))
 
 app.get('/', (req, res) => {
   res.send('Hello world')
+})
+
+app.post('/register', (req, res) => {
+
+  const user = new User(req.body)
+
+  user.save((err, userInfo) => {
+    if(err) return res.json({ success: false, err })
+    return res.status(200).json({
+      success: true
+    })
+  })
 })
 
 app.listen(port, () => {
